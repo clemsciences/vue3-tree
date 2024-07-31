@@ -41,9 +41,18 @@
           @click.stop="onToggleCheckbox(node)"
         />
       </slot>
+
       <span class="tree-row-txt">
-        {{ node.label }}
+        <slot name="label" :node="node" :p="fullPath">
+          <p>default label-{{ fullPath }}-{{ node.label }}</p>
+        </slot>
       </span>
+      <slot name="action" :node="node" :p="fullPath">
+        <p>default action-{{ fullPath }}-{{ node.label }}</p>
+      </slot>
+      <template v-if="node.is_leaf">
+        <slot name="buttonGoTo" :path="fullPath" />
+      </template>
       <template v-if="childCount && showChildCount">
         <slot
           name="childCount"
@@ -89,6 +98,7 @@
           :get-node="getNode"
           :update-node="updateNode"
           :expandable="expandable"
+          :full-path="`${fullPath}/${child.id}`"
           @delete-row="removedRow"
           @node-click="(item) => handleClick(item, true)"
           @toggle-checkbox="onToggleCheckbox"
@@ -125,6 +135,15 @@
               :checked="checked"
               :indeterminate="indeterminate"
             />
+          </template>
+          <template #label="slotProps">
+            <slot name="label" :node="slotProps.node" :p="slotProps.p" />
+          </template>
+          <template #action="slotProps">
+            <slot name="action" :node="slotProps.node" :p="slotProps.p" />
+          </template>
+          <template #buttonGoTo="{ path: thePath }">
+            <slot name="buttonGoTo" :path="thePath" />
           </template>
         </tree-row>
       </template>
@@ -197,6 +216,14 @@ export default {
       type: Boolean,
       default: true,
     },
+    nodeGoTo: {
+      type: Function,
+      required: false,
+    },
+    fullPath: {
+      type: String,
+      required: true,
+    },
   },
   emits: ['nodeClick', 'toggleCheckbox', 'nodeExpanded', 'deleteRow'],
   setup(props, { emit }) {
@@ -206,6 +233,7 @@ export default {
     );
 
     const toggleExpanded = node => {
+      // eslint-disable-next-line vue/no-mutating-props
       props.node.expanded = props.node.nodes ? !props.node.expanded : false;
       nextTick(() => {
         emit('nodeExpanded', node, props.node.expanded);

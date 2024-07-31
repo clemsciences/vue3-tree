@@ -5,6 +5,7 @@
         v-for="node in filteredData"
         :key="node.id"
       >
+        <slot name="letitre" :p="node" />
         <tree-row
           v-if="!node.hidden"
           :ref="`tree-row-${node.id}`"
@@ -20,6 +21,7 @@
           :get-node="getNode"
           :update-node="updateNode"
           :expandable="expandable"
+          :full-path="initialPath"
           @delete-row="onDeleteRow"
           @node-click="onNodeClick"
           @node-expanded="onNodeExpanded"
@@ -53,6 +55,15 @@
               :checked-count="checkedCount"
               :childs="childs"
             />
+          </template>
+          <template #label="{ node: slotNode, path: initialPath }">
+            <slot name="label" :node="slotNode" :path="initialPath" />
+          </template>
+          <template #action="{ node: slotNode, path: initialPath }">
+            <slot name="action" :node="slotNode" :path="initialPath" />
+          </template>
+          <template #buttonGoTo="{path: initialPath}">
+            <slot name="buttonGoTo" :path="initialPath" />
           </template>
         </tree-row>
       </template>
@@ -138,6 +149,14 @@ export default {
       type: Boolean,
       default: true,
     },
+    nodeGoTo: {
+      type: Function,
+      required: false,
+    },
+    initialPath: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['nodeClick', 'nodeExpanded', 'checkboxToggle', 'update:nodes'],
   setup(props, { emit }) {
@@ -145,6 +164,10 @@ export default {
 
     const filteredData = computed(() => {
       let newData = props.nodes;
+      newData = newData.map(
+        value => {
+          return { ...value, fullPath: props.initialPath };
+        });
 
       if (props.searchText) {
         newData = searchNodes(props.nodes, props.searchText);
