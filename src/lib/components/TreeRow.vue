@@ -44,14 +44,18 @@
 
       <span class="tree-row-txt">
         <slot name="label" :node="node" :p="fullPath">
-          <p>default label-{{ fullPath }}-{{ node.label }}</p>
+<!--          <p>default label-{{ fullPath }}-{{ node.label }}</p>-->
+          <p>{{ node.label }}</p>
         </slot>
       </span>
       <slot name="action" :node="node" :p="fullPath">
-        <p>default action-{{ fullPath }}-{{ node.label }}</p>
+<!--        <p>default action-{{ fullPath }}-{{ node.label }}</p>-->
       </slot>
       <template v-if="node.is_leaf">
-        <slot name="buttonGoTo" :path="fullPath" />
+        <slot name="buttonGoTo" :path="`${fullPath}/${node.id}`" />
+      </template>
+      <template v-if="!node.is_leaf">
+        <slot name="loadMore" :path="fullPath" />
       </template>
       <template v-if="childCount && showChildCount">
         <slot
@@ -143,7 +147,10 @@
             <slot name="action" :node="slotProps.node" :p="slotProps.p" />
           </template>
           <template #buttonGoTo="{ path: thePath }">
-            <slot name="buttonGoTo" :path="thePath" />
+            <slot name="buttonGoTo" :path="`${thePath}/${child.id}`" />
+          </template>
+          <template v-if="!child.is_leaf" #loadMore="{ path: thePath }">
+            <slot name="loadMore" :path="`${thePath}/${child.id}`" />
           </template>
         </tree-row>
       </template>

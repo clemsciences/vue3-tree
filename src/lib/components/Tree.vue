@@ -62,8 +62,11 @@
           <template #action="{ node: slotNode, path: initialPath }">
             <slot name="action" :node="slotNode" :path="initialPath" />
           </template>
-          <template #buttonGoTo="{path: initialPath}">
+          <template #buttonGoTo="{path: initialPath }">
             <slot name="buttonGoTo" :path="initialPath" />
+          </template>
+          <template #loadMore="{path: initialPath }">
+            <slot name="loadMore" :path="`${initialPath}/${node.id}`" />
           </template>
         </tree-row>
       </template>
@@ -157,6 +160,10 @@ export default {
       type: String,
       default: '',
     },
+    // loadChildren: {
+    //   type: Function,
+    //   required: true,
+    // },
   },
   emits: ['nodeClick', 'nodeExpanded', 'checkboxToggle', 'update:nodes'],
   setup(props, { emit }) {
